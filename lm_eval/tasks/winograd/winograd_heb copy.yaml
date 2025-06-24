@@ -1,0 +1,48 @@
+task: winograd_heb_generative
+metadata:
+  version: 0.1
+dataset_name: null
+dataset_path: "json"
+dataset_kwargs:
+  data_files: "/data/data-catalog/dicta/DictaLM 2.0 Hebrew.jsonl"
+  trust_remote_code: true
+output_type: generate_until
+generation_kwargs:
+  until:
+    - "\n"
+    - "."
+description: |
+  You'll be provided with a context and a question. The question will have two options, and you need to choose the correct one based on the context. ATTENTION: The answer should be the option text itself quoted precisely, not just the number of the option.
+doc_to_text: |
+  Context: {{ context }}
+  Question:{{ question }}
+  Options:
+  - "{{ option1 }}"
+  - "{{ option2 }}"
+doc_to_target: "{{ [option1, option2][label|int - 1] }}"
+gen_prefix: "Answer: "
+# doc_to_choice: "{{ [ option1 , option2 ] }}"
+test_split: train
+validation_split: train
+should_decontaminate: true
+doc_to_decontamination_query: context
+fewshot_split: train
+num_fewshot: 3
+process_results: !function utils.process_results
+filter_list:
+  - name: "response_cleaning"
+    filter:
+      - function: remove_whitespace
+      - function: take_first
+metric_list:
+  # - metric: acc
+  #   aggregation: mean
+  #   higher_is_better: true
+  - metric: exact_match
+    aggregation: mean
+    higher_is_better: true
+  - metric: michael-hhai/Tiny_Judge
+    hf_evaluate: true
+    aggregation: mean
+    higher_is_better: true
+    instruction: {{doc}}

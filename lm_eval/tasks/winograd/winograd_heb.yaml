@@ -1,0 +1,20 @@
+task: winograd_heb
+metadata:
+  version: 0.1
+dataset_name: null
+dataset_path: "json"
+dataset_kwargs:
+  data_files: "/data/data-catalog/dicta/DictaLM 2.0 Hebrew.jsonl"
+  trust_remote_code: true
+output_type: multiple_choice
+doc_to_text: "{{ context }} {{ question }}"
+doc_to_target: "{{ (label|int - 1) | int }}"
+doc_to_choice: "{{ [ option1 , option2 ] }}"
+test_split: train
+validation_split: train
+should_decontaminate: true
+doc_to_decontamination_query: context
+metric_list:
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
